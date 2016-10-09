@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>I WANNA PASS MY GRE</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+        <style>
+            html, body {
+                height: 100%;
+            }
+
+            body {
+                background-color: #000000;
+                margin: 0;
+                font-family: Helvetica, sans-serif;;
+                overflow: hidden;
+            }
+
+            a {
+                color: #ffffff;
+            }
+
+            #info {
+                position: absolute;
+                width: 100%;
+                color: #ffffff;
+                padding: 5px;
+                font-family: Monospace;
+                font-size: 13px;
+                font-weight: bold;
+                text-align: center;
+                z-index: 1;
+            }
+
+            #menu {
+                position: absolute;
+                bottom: 20px;
+                width: 100%;
+                text-align: center;
+            }
+
+            .element {
+                width: 750px;
+                height: 160px;
+                box-shadow: 0px 0px 12px rgba(0,255,255,0.5);
+                border: 1px solid rgba(127,255,255,0.25);
+                text-align: center;
+                cursor: default;
+                background-color: rgba(0,127,127, 0.5);
+            }
+
+            .element:hover {
+                box-shadow: 0px 0px 12px rgba(127, 100, 50, 0.7);
+                background-color: rgba(127, 100, 50, 0.7);
+                border: 1px solid rgba(127, 100, 50, 0.7);
+            }
+
+                .element .word{
+                    text-align: center;
+                    position: absolute;
+                    top: 40px;
+                    left: 0px;
+                    right: 0px;
+                    font-size: 60px;
+                    font-weight: bold;
+                    color: rgba(255,255,255,0.75);
+                    text-shadow: 0 0 10px rgba(0,255,255,0.95);
+                }
+
+            .ee{
+                position: absolute;
+                width: 1000px;
+                height: 1000px;
+                background-color: rgba(0, 125, 0, 0.7);
+            }
+
+            .screen{
+                width: 800px;
+                height: 700px;
+                box-shadow: 0px 0px 12px rgba(0,255,255,0.5);
+                border: 1px solid rgba(127,255,255,0.25);
+                text-align: center;
+                cursor: default;
+                background-color: rgba(0,127,127, 0.5);
+                text-align: center;
+                position: absolute;
+                top: 40px;
+                left: 0px;
+                right: 0px;
+                font-size: 80px;
+                font-weight: bold;
+                color: rgba(255,255,255,0.75);
+                text-shadow: 0 0 10px rgba(0,255,255,0.95);
+            }
+
+            button {
+                color: rgba(127,255,255,0.75);
+                background: transparent;
+                outline: 1px solid rgba(127,255,255,0.75);
+                border: 0px;
+                padding: 5px 10px;
+                cursor: pointer;
+            }
+            button:hover {
+                background-color: rgba(0,255,255,0.5);
+            }
+            button:active {
+                color: #000000;
+                background-color: rgba(0,255,255,0.75);
+            }
+        </style>
+    </head>
+    <body>
+        <script src="../js/three.js"></script>
+        <script src="../js/libs/tween.min.js"></script>
+        <script src="../js/controls/TrackballControls.js"></script>
+        <script src="../js/renderers/CSS3DRenderer.js"></script>
+
+        <div id="container"></div>
+
+        <script>
+
+            var table = [
+                'surpass',
+                'curative',
+                'previous',
+                'hereditary',
+                'bosom',
+                'plague',
+                'gender',
+                'clue',
+                'maritime'
+            ];
+
+            var camera, scene, renderer;
+            var controls;
+
+            var objects = [];
+            var targets = { sphere: [], helix: [], grid: [] };
+            var screens = [];
+
+            var ee;
+            // var rSpeedIncrement = 0.0001;
+            var targetRSpeed = 0;
+            var currentRSpeed = 0;
+            var radius = 3200;
+
+            var phi = Math.PI;
+
+            var adjustEnabled = false;
+
+            init();
+            animate();
+
+            function init() {
+
+                camera = new THREE.PerspectiveCamera( 40, window.innerWidth / window.innerHeight, 1, 10000 );
+                camera.position.z = 5000;
+
+                scene = new THREE.Scene();
+                camera.lookAt(scene.position);
+
+                e = new THREE.Object3D();
+                //e.position.z = -1000;
+
+                for ( var i = 0; i < 100; i += 1 ) {
+
+                    var element = document.createElement( 'div' );
+                    element.className = 'element';
+
+                    var word = document.createElement('div');
+                    word.className = 'word';
+                    word.textContent = table[Math.floor(Math.random() * table.length)];
+                    element.appendChild(word);
+
+                    var object = new THREE.CSS3DObject( element );
+                    object.position.x = Math.random() * 10000 - 2000;
+                    object.position.y = Math.random() * 10000 - 2000;
+                    object.position.z = Math.random() * 10000 - 2000;
+                    e.add( object );
+
+                    objects.push( object );
+
+                }
+                scene.add(e);
+
+                //???
+                for( var i = -1; i <= 1; ++i){
+                    for (var j = 0; j <= 1; ++j){
+                        var element = document.createElement('div');
+                        element.className = 'screen';
+                        var object = new THREE.CSS3DObject(element);
+                        object.position.set(i * 900 , j * 800 - 400, 0);
+                        object.lookAt(camera.position);
+                        screens.push(element);
+                        scene.add(object);
+                    }
+                }
+
+                // helix
+
+                var vector = new THREE.Vector3();
+                for ( var i = 0, l = objects.length; i < l; i ++ ) {
+                    var object = new THREE.Object3D();
+
+                    object.position.x = radius * Math.sin( phi );
+                    object.position.y = - ( i * 10 ) - 1;
+                    object.position.z = - radius * Math.cos( phi );
+
+                    vector.x = object.position.x * 2;
+                    vector.y = object.position.y;
+                    vector.z = object.position.z * 2;
+
+                    object.lookAt( vector );
+                    targets.helix.push( object );
+
+                    phi += 0.25;
+                    phi = phi > 200 ? phi - 200 : phi;
+
+                }
+
+                //
+
+                renderer = new THREE.CSS3DRenderer();
+                renderer.setSize( window.innerWidth, window.innerHeight );
+                renderer.domElement.style.position = 'absolute';
+                document.getElementById( 'container' ).appendChild( renderer.domElement );
+
+                //
+
+                controls = new THREE.TrackballControls( camera, renderer.domElement );
+                controls.rotateSpeed = 0.5;
+                controls.minDistance = 500;
+                controls.maxDistance = 6000;
+                //controls.addEventListener( 'change', render );
+
+                transform( targets.helix, 2000 );
+
+                window.addEventListener( 'resize', onWindowResize, false );
+                document.addEventListener( 'keydown', onKeyDown, false );
+                document.addEventListener( 'keyup', onKeyUp, false );
+
+            }
+
+            function transform( targets, duration ) {
+
+                TWEEN.removeAll();
+
+                for ( var i = 0; i < objects.length; i ++ ) {
+
+                    var object = objects[ i ];
+                    var target = targets[ i ];
+
+                    new TWEEN.Tween( object.position )
+                        .to( { x: target.position.x, y: target.position.y, z: target.position.z }, Math.random() * duration + duration )
+                        .easing( TWEEN.Easing.Exponential.InOut )
+                        .start();
+
+                    new TWEEN.Tween( object.rotation )
+                        .to( { x: target.rotation.x, y: target.rotation.y, z: target.rotation.z }, Math.random() * duration + duration )
+                        .easing( TWEEN.Easing.Exponential.InOut )
+                        .start();
+
+                }
+
+                new TWEEN.Tween( this )
+                    .to( {}, duration * 1.7 )
+                    .onComplete( function(){ adjustEnabled = true; } )
+                    .start();
+
+            }
+
+            function onWindowResize() {
+
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+
+                renderer.setSize( window.innerWidth, window.innerHeight );
+
+                render();
+
+            }
+
+            function onKeyDown(event){
+                var event = event || window.event;
+                if (event){
+                    if (adjustEnabled && event.keyCode == 32){//space
+                        // alert("asdfghjkl");
+                        targetRSpeed = 0.15;
+                    }
+                }
+            }
+
+            function onKeyUp(event){
+                var event = event || window.event;
+                if (event){
+                    if (event.keyCode == 32){//space
+                        targetRSpeed = 0;
+                    }
+                }
+            }
+
+            function animate() {
+
+                TWEEN.update();
+                controls.update();
+                render();
+
+                requestAnimationFrame( animate );
+
+            }
+
+            function render() {
+
+                currentRSpeed += (targetRSpeed - currentRSpeed) * 0.03;
+                e.rotateY(currentRSpeed);
+
+                var h = 10 / 0.25;
+                for (var i = 0; i < objects.length; ++i){
+                    objects[i].position.y += h * currentRSpeed;
+                    if (adjustEnabled && objects[i].position.y - 10 >= 0){
+                        objects[i].position.x = radius * Math.sin( phi );
+                        objects[i].position.y = -100 * 10 - 1;
+                        objects[i].position.z = - radius * Math.cos( phi );
+
+                        var vector = new THREE.Vector3();
+                        vector.x = objects[i].position.x * 2;
+                        vector.y = objects[i].position.y;
+                        vector.z = objects[i].position.z * 2;
+
+                        objects[i].lookAt( vector );
+
+                        phi += 0.25;
+                        phi = phi > 200 ? phi - 200 : phi;
+                    }
+                }
+
+
+                renderer.render( scene, camera );
+
+            }
+
+        </script>
+    </body>
+</html>
